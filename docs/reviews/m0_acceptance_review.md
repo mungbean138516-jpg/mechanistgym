@@ -2,8 +2,8 @@
 
 **Review type:** Verification and Validation (V&V) Review
 
-**Review date:** 2026-07-14
-**Decision:** Accepted for local v0.1; remote CI and independent reproduction remain pending.
+**Review date:** 2026-07-15
+**Decision:** Accepted for the public M0 bootstrap; independent reproduction remains pending.
 
 ## Scope reviewed
 
@@ -27,7 +27,7 @@
 | User-facing example works | Demo returns a structured verified Trace | Pass |
 | Source and tests compile | Python compileall | Pass |
 | Public API has an executable example | Demo and integration test | Pass |
-| Clean remote CI | GitHub Actions | Pending repository publication |
+| Clean remote CI | [GitHub Actions run 29396156328](https://github.com/mungbean138516-jpg/mechanistgym/actions/runs/29396156328) | Pass |
 | Independent reproduction | External reviewer | Pending |
 
 ## Commands reviewed
@@ -37,7 +37,7 @@ make demo
 make check
 ~~~
 
-Local result: 7 tests passed; Ruff lint and format checks passed.
+Local result: 7 tests passed; Ruff lint and format checks passed. Remote result: the Python 3.11, 3.12, and 3.13 CI matrix passed on the initial public commit.
 
 ## Scientific review
 
