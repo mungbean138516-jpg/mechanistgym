@@ -1,0 +1,84 @@
+name: Research task
+description: Propose a hypothesis-driven research or evaluation task.
+title: "[Research]: "
+labels:
+  - research
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to make the scientific claim, evidence standard, and
+        reproducibility requirements explicit before implementation begins.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and motivation
+      description: What scientific or engineering problem does this task address?
+      placeholder: Describe the gap and why it matters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      description: State one focused, falsifiable question.
+      placeholder: Does X improve Y under condition Z at a fixed budget?
+    validations:
+      required: true
+
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis and expected failure modes
+      description: State the expected result and at least one credible way it could fail.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List what is included and explicitly excluded.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: Evaluation plan
+      description: Define baselines, data split, metrics, budgets, seeds, and statistical tests.
+      placeholder: |
+        Baselines:
+        Primary metric:
+        Controls and fixed budgets:
+        Seeds / confidence intervals:
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Provide observable criteria that make this task complete.
+      placeholder: |
+        - [ ] Implementation has tests
+        - [ ] Experiment can be reproduced from one command
+        - [ ] Result includes uncertainty and failure analysis
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducibility
+    attributes:
+      label: Reproducibility record
+      description: Identify datasets, versions, configurations, environments, and expected artifacts.
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and risks
+      description: Link blocked issues and record compute, data, licensing, privacy, or safety risks.
