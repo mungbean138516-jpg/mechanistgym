@@ -17,7 +17,11 @@ class InvalidAgentOutput(RecoverableAgentError):
 
 @runtime_checkable
 class AgentAdapter(Protocol):
-    """A heterogeneous agent exposed as one resumable step executor."""
+    """A heterogeneous agent exposed as one resumable step executor.
+
+    Instances shared across concurrent Tasks must be safe for re-entrant async use; the runtime does
+    not serialize calls by adapter identity.
+    """
 
     name: str
 
