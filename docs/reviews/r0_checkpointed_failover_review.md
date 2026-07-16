@@ -2,8 +2,8 @@
 
 **Review type:** Verification and Validation (V&V) Review
 **Review date:** 2026-07-16
-**Decision:** Accepted locally for the R0 vertical slice. The updated Python 3.11–3.13 remote CI
-matrix and independent external reproduction remain pending.
+**Decision:** Accepted for the R0 vertical slice. Local verification and the Python 3.11–3.13
+remote CI matrix pass; independent external reproduction remains pending.
 
 ## Scope reviewed
 
@@ -35,7 +35,7 @@ matrix and independent external reproduction remain pending.
 | Existing scientific fixture remains compatible | original decay tests and demo | Pass |
 | Source passes local quality gates | compile, Ruff lint, Ruff format | Pass |
 | Built package works outside the source tree | wheel install and runtime smoke test | Pass |
-| Python 3.11–3.13 remote matrix for this revision | GitHub Actions, PR #4 | Pending push/PR |
+| Python 3.11–3.13 remote matrix for implementation commit `e5ded3c` | [GitHub Actions run 29480794013](https://github.com/mungbean138516-jpg/mechanistgym/actions/runs/29480794013) | Pass |
 | Independent reproduction | External reviewer | Pending |
 
 ## Commands reviewed
