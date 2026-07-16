@@ -23,7 +23,7 @@ failure, execution can resume from the first uncommitted step instead of restart
 - ✅ per-batch bounded concurrency across independent Tasks in one event loop;
 - ✅ per-Task Agent-failure isolation and stable input-order results;
 - ✅ preservation of committed checkpoints during batch cancellation;
-- ✅ automated tests, with CI configured for Python 3.11, 3.12, and 3.13.
+- ✅ automated tests and CI on Python 3.11, 3.12, and 3.13.
 
 Not implemented yet:
 

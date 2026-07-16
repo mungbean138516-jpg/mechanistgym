@@ -54,8 +54,9 @@ Task's failure, preserve checkpointed failover under concurrency, and recover co
 batch cancellation. Invalid adapter chains fail before persistence, queued Tasks stop after an
 infrastructure error, and multiple active exceptions remain visible.
 
-**Implementation status:** complete on the R1 development branch. Local acceptance covers the exit
-gate; the milestone remains pre-release until review and the remote Python matrix pass.
+**Implementation status:** complete on the R1 development branch. Local acceptance and the remote
+Python 3.11–3.13 matrix cover the exit gate; the milestone remains pre-release while its stacked pull
+request is in draft review.
 
 The **R-series** validates reusable runtime infrastructure. The **M-series** remains the scientific
 validation and research track.

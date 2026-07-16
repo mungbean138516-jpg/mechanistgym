@@ -2,8 +2,8 @@
 
 **Review type:** Verification and Validation (V&V) Review  
 **Review date:** 2026-07-16  
-**Decision:** Provisionally accepted for local R1 verification. Remote Python 3.11–3.13 CI and
-independent external reproduction remain pending.
+**Decision:** Accepted for R1 local and remote verification. Independent external reproduction
+remains pending.
 
 ## Scope reviewed
 
@@ -37,7 +37,7 @@ independent external reproduction remain pending.
 | Existing R0 and scientific tests remain compatible | complete local test suite | Pass |
 | Source passes local quality gates | compile, Ruff lint, Ruff format | Pass |
 | Built package works outside the source tree | wheel install and async-demo smoke test | Pass |
-| Python 3.11–3.13 remote matrix | GitHub Actions | Pending |
+| Python 3.11–3.13 remote matrix for commit `8ccd09c` | [GitHub Actions run 29482971109](https://github.com/mungbean138516-jpg/mechanistgym/actions/runs/29482971109) | Pass |
 | Independent reproduction | External reviewer | Pending |
 
 ## Commands reviewed
@@ -52,7 +52,8 @@ python -m pip wheel . --no-deps --no-build-isolation
 
 Local result: 39 tests passed, including 13 deterministic R1 concurrency tests, 19 R0 runtime tests,
 and all 7 pre-existing scientific tests. Ruff lint and format checks passed. The installed wheel ran
-the bounded async demonstration from outside the repository source tree.
+the bounded async demonstration from outside the repository source tree. GitHub Actions reproduced
+the installation, package smoke tests, and quality gates on Python 3.11, 3.12, and 3.13.
 
 ## Observed async trace
 
