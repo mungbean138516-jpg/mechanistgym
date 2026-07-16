@@ -1,16 +1,26 @@
-# Research Charter
+# Future Scientific Task-Pack Research Charter
 
-## Motivation
+> **Status: Future research.** This document preserves a candidate scientific-validation line and
+> its research-integrity requirements. It is not the active product roadmap and does not describe
+> current runtime capabilities. MechanistGym's active project is durable execution for
+> long-horizon Agent workflows; scientific discovery, skill transfer, and adaptive organization
+> require separate problem validation before they become implementation commitments.
 
-Scientific agents can execute increasingly complex analysis workflows, yet successful task completion does not guarantee valid scientific reasoning. Procedural memory may improve repeated-task performance while also introducing negative transfer, stale assumptions, and recursive self-revision errors.
+## Candidate motivation
 
-Mechanistic biological systems provide a useful testbed because they support executable interventions, deterministic and numerical checks, and controlled distribution shifts.
+Scientific agents may execute increasingly complex analysis workflows, yet successful task completion
+would not by itself guarantee valid scientific reasoning. Procedural memory could improve
+repeated-task performance while also introducing negative transfer, stale assumptions, and recursive
+self-revision errors.
 
-## Research question
+Mechanistic biological systems could provide a useful future testbed because they support executable
+interventions, deterministic and numerical checks, and controlled distribution shifts.
+
+## Candidate future research question
 
 Can scientific agents transfer experimental-design and model-auditing procedures across biological dynamical systems without negative transfer or recursive drift?
 
-## Working hypotheses
+## Unvalidated future hypotheses
 
 1. Procedural memory will improve in-distribution performance but may increase errors under topology, noise, or observation shifts.
 2. External verifier-gated updates will reduce recursive drift relative to self-feedback-only updates.
@@ -18,9 +28,10 @@ Can scientific agents transfer experimental-design and model-auditing procedures
 4. Role-specialized multi-agent systems will provide conditional rather than universal benefit under matched budgets.
 5. Structure-aware curricula will improve held-out transfer relative to random task ordering.
 
-## Planned contribution
+## Potential future contribution
 
-The intended contribution is a reproducible environment and evaluation protocol for:
+A future scientific Task pack could contribute a reproducible environment and evaluation protocol
+for:
 
 - versioned procedural artifacts with explicit applicability and failure conditions;
 - executable scientific verification;
@@ -28,7 +39,7 @@ The intended contribution is a reproducible environment and evaluation protocol 
 - negative-transfer and abstention measurement;
 - cost-matched single- and multi-agent comparison.
 
-## Experimental controls
+## Controls required before any future scientific claim
 
 - frozen train, development, and held-out task families;
 - isolated Agent and Verifier information boundaries;
@@ -37,11 +48,14 @@ The intended contribution is a reproducible environment and evaluation protocol 
 - paired task-level comparisons and uncertainty intervals;
 - negative and null result retention.
 
-## M0 scope
+## Historical M0 fixture
 
-M0 validates platform contracts with a first-order decay analytic fixture. It does not test the working hypotheses or claim methodological novelty.
+M0 validated the original Model, Environment, Agent, and Verifier contracts with a first-order decay
+analytic fixture. It did not test the hypotheses above or claim methodological novelty. The fixture
+now remains a regression test and a possible seed for a future scientific Task pack; it does not
+define the active product direction.
 
-## Exclusions
+## Exclusions for any future scientific track
 
 - private clinical data;
 - wet-lab automation;
@@ -50,9 +64,9 @@ M0 validates platform contracts with a first-order decay analytic fixture. It do
 - GPU or distributed infrastructure without profiling evidence;
 - claims based only on LLM judging.
 
-## Scientific-track related work
+## Future scientific-track related work
 
-The scientific validation track is informed by:
+A future scientific validation track would be informed by:
 
 - [SciGym](https://arxiv.org/abs/2507.02083), an SBML dry lab for evaluating scientific
   experimentation;
@@ -63,8 +77,8 @@ The scientific validation track is informed by:
 - [Process-Reward Tactic Evolution](https://arxiv.org/abs/2606.20839), a related study of
   verifier-backed learning for Galaxy workflows.
 
-These references motivate the scientific Task-pack track; they do not establish the novelty or
-validation of the durable-execution runtime.
+These references motivate a possible scientific Task-pack track; they do not establish its novelty,
+make it an active roadmap commitment, or validate the durable-execution runtime.
 
 ## Research integrity
 
