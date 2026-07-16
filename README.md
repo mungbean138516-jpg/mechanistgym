@@ -1,16 +1,17 @@
 # MechanistGym
 
-**Durable execution for long-horizon agent tasks**
+**Preserve completed agent work when a worker fails.**
 
 [![CI](https://github.com/mungbean138516-jpg/mechanistgym/actions/workflows/ci.yml/badge.svg)](https://github.com/mungbean138516-jpg/mechanistgym/actions/workflows/ci.yml)
 
-MechanistGym is an experimental agent-execution runtime that preserves committed work across worker
-failures. A Task produces durable Artifacts; after an interruption or explicitly recoverable adapter
+MechanistGym is an experimental runtime for durable, long-horizon Agent execution. Each successful
+Task step becomes a committed Artifact; after an interruption or explicitly recoverable worker
 failure, execution can resume from the first uncommitted step instead of restarting the whole Task.
 
-> **Status:** pre-alpha. R0 demonstrates local, sequential **Task → Artifact → Recovery** with
-> deterministic adapters and a SQLite-backed persistent store. It does not yet include real
-> model-provider adapters, distributed execution, or learned routing.
+> **Status:** pre-alpha. The current runtime supports local **Task → Artifact → Recovery** and
+> bounded asynchronous execution across independent Tasks within a submitted batch. It uses
+> deterministic adapters and a SQLite reference backend; it does not yet include real model-provider
+> adapters, distributed workers, or learned routing.
 
 ## What works today
 
@@ -19,15 +20,17 @@ failure, execution can resume from the first uncommitted step instead of restart
 - ✅ asynchronous `AgentAdapter` interfaces with ordered execution inside each Task;
 - ✅ deterministic failure injection, fallback handoff, integrity checks, and event traces;
 - ✅ recovery after closing the store or abruptly terminating the local execution process;
-- ✅ automated tests and CI on Python 3.11, 3.12, and 3.13.
+- ✅ per-batch bounded concurrency across independent Tasks in one event loop;
+- ✅ per-Task Agent-failure isolation and stable input-order results;
+- ✅ preservation of committed checkpoints during batch cancellation;
+- ✅ automated tests, with CI configured for Python 3.11, 3.12, and 3.13.
 
 Not implemented yet:
 
-- 🚧 concurrent execution across independent Tasks (R1);
 - 🚧 production adapters for hosted or local model providers;
-- 🚧 distributed workers, budgets, learned routing, and adaptive organization.
+- 🚧 parallel DAG steps, distributed workers, budgets, learned routing, and adaptive organization.
 
-## Run the recovery demo
+## Run it
 
 MechanistGym has no runtime dependencies beyond Python 3.11 or newer.
 
@@ -36,9 +39,10 @@ git clone https://github.com/mungbean138516-jpg/mechanistgym.git
 cd mechanistgym
 python -m pip install -e ".[dev]"
 make runtime-demo
+make runtime-async-demo
 ~~~
 
-The demo deliberately fails the primary adapter at step 1. The important output is:
+The recovery demo deliberately fails the primary adapter at step 1. The important output is:
 
 ~~~text
 status: succeeded
@@ -49,13 +53,27 @@ fallback_calls: [1, 2]
 Step 0 was already committed, so the fallback does not repeat it. Run the complete verification
 suite with `make test` or all compilation, test, lint, and formatting gates with `make check`.
 
+The async demo runs three independent Tasks with `max_concurrency=2`. One Task recovers through a
+fallback while its siblings continue:
+
+~~~text
+observed_max_active: 2
+result_order: [batch-a, batch-b, batch-c]
+statuses: all succeeded
+recovered: batch-b only
+fallback_calls: [(batch-b, 1)]
+~~~
+
 ## How recovery works
 
-Long-horizon agent tasks can fail after earlier steps have already produced valid outputs. R0 tests
-one bounded claim:
+Long-horizon agent tasks can fail after earlier steps have already produced valid outputs. The
+current runtime tests two bounded claims:
 
 > Another adapter can resume a Task at the first uncommitted step without recomputing completed
 > Artifacts.
+
+> Independent Tasks can overlap up to a per-batch concurrency limit without sharing recovery state
+> or allowing one terminal Agent failure to cancel its siblings.
 
 The public execution model is deliberately small:
 
@@ -84,16 +102,27 @@ sequenceDiagram
     R->>S: Atomically commit Artifact 1 + recovery cursor
 ~~~
 
-**Scope boundary.** R0 provides application-level recovery at committed step boundaries in a local,
-sequential runner. It does not recover an in-flight step or hidden model context, snapshot process
-memory, guarantee exactly-once external side effects, provide distributed scheduling or leases, or
-implement learned routing or autonomous team formation.
+Inside each Task, steps remain ordered and sequential. Across Tasks, `DurableRunner.run_many` uses a
+positive `max_concurrency` limit within that call and returns results in input order. A terminal Agent
+failure becomes that Task's failed result. After an infrastructure or integrity error becomes known,
+already-active siblings settle, queued Tasks do not start, and every observed batch exception remains
+visible if the batch is allowed to settle—multiple child exceptions are raised as a Python exception
+group. Explicit caller cancellation propagates immediately and may supersede pending child errors.
+
+**Scope boundary.** The runtime provides application-level recovery at committed step boundaries in
+one local Python event loop. It does not recover an in-flight step or hidden model context, snapshot
+process memory, guarantee exactly-once external side effects, schedule parallel DAG steps, provide
+distributed workers or leases, or implement learned routing or autonomous team formation. The
+concurrency bound is not global across simultaneous `run_many` calls and is not a provider rate
+limit. Shared adapter instances must be safe for re-entrant async use. Concurrent execution of the
+same Task ID across separate calls is unsupported until the runtime has claims or leases.
 
 ## Roadmap
 
 - **R0 — Durable execution:** committed Artifact recovery and deterministic failover;
-- **R1 — Bounded async execution:** concurrent independent Tasks with failure isolation;
-- **Later research:** provider adapters, budget-aware routing, failure prediction, adaptive teams,
+- **R1 — Bounded async execution:** concurrent independent Tasks with Agent-failure isolation and
+  preservation of committed work during cancellation;
+- **Later milestones:** provider adapters, budget-aware routing, failure prediction, adaptive teams,
   and scientific Task packs—added only after their prerequisites and evaluation data exist.
 
 See the gated [roadmap](ROADMAP.md) and [architecture decisions](docs/decisions/) for exact scope and
