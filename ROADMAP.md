@@ -16,26 +16,55 @@ MechanistGym is organized as a sequence of gated research milestones. Each gate 
 
 **Exit gate:** local tests pass; remote CI and independent reproduction complete.
 
-## R0 — Checkpointed agent failover vertical slice
+## R0 — Durable agent execution vertical slice
 
-**Objective:** preserve committed agent artifacts when a recoverable worker failure occurs.
+**Objective:** preserve committed Agent work and resume a Task at its first uncommitted step after a
+recoverable worker failure.
 
 **Scope:**
 
-- immutable Task, Artifact, and Checkpoint contracts;
-- SQLite persistence with atomic Artifact–Checkpoint commits;
-- asynchronous AgentAdapter boundary with sequential step execution;
-- deterministic failure injection and fallback rerouting;
-- close/reopen recovery without repeating completed steps.
+- Task and committed Artifact contracts;
+- revisioned Checkpoint as runtime-managed recovery metadata exposed for inspection;
+- persistent RuntimeStore abstraction with a local SQLite backend and atomic Artifact–Checkpoint
+  commits;
+- asynchronous AgentAdapter boundary with sequential per-Task execution;
+- deterministic failure injection, ordered failover, and close/reopen Recovery;
+- abrupt OS-process termination followed by Recovery in a new process.
 
-**Non-goals:** general process checkpointing, distributed execution, exactly-once external side
-effects, budget management, model-context recovery, learned routing, or autonomous organization.
+**Non-goals:** in-flight step or model-context recovery, process-memory snapshots, exactly-once
+external side effects, distributed scheduling or leases, learned routing, or autonomous team
+formation.
 
-**Exit gate:** recovery, reopen, idempotent completion, stale-checkpoint, definition-mismatch, and
-corruption tests pass; the failure demo shows `primary=[0, 1]`, `fallback=[1, 2]`.
+**Exit gate:** failover, reopen, cancellation, abrupt process-exit, idempotent completion,
+stale-checkpoint, definition-mismatch, and corruption tests pass; the failure demo shows
+`primary=[0, 1]`, `fallback=[1, 2]`.
 
 R0 is a cross-cutting infrastructure experiment. It does not replace the scientific roadmap or
 authorize a repository rename before the planned direction and user validation.
+
+## R1 — Bounded asynchronous Task execution
+
+**Objective:** execute independent durable Tasks concurrently without allowing one terminal Agent
+failure to cancel or corrupt its siblings.
+
+**Scope:**
+
+- concurrency across distinct Tasks; ordered steps inside each Task remain sequential;
+- a positive `max_concurrency` bound enforced in one Python event loop;
+- input-order result stability and per-Task status, Artifact, Checkpoint, and event isolation;
+- terminal Agent failure returned as that Task's failed result while sibling Tasks continue;
+- batch cancellation that preserves only committed work for later Recovery.
+
+**Non-goals:** parallel DAG steps, threads or subprocess workers, distributed scheduling, fairness,
+priorities, per-provider rate limiting, duplicate concurrent execution of one Task, or retrying
+infrastructure and integrity failures.
+
+**Exit gate:** deterministic tests prove real overlap, enforce the concurrency bound, isolate one
+Task's failure, preserve checkpointed failover under concurrency, and recover committed work after
+batch cancellation.
+
+The **R-series** validates reusable runtime infrastructure. The **M-series** remains the scientific
+validation and research track.
 
 ## M1 — ODE task environments and noisy observations
 

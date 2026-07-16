@@ -1,15 +1,16 @@
 cff-version: 1.2.0
 message: "If you use MechanistGym in your research, please cite this software."
 type: software
-title: "MechanistGym: Verifier-Gated Skill Transfer for Scientific Agents"
+title: "MechanistGym: Durable Execution for Long-Horizon Agent Tasks"
 repository-code: "https://github.com/mungbean138516-jpg/mechanistgym"
 authors:
   - family-names: Li
     given-names: Moying
 license: MIT
 keywords:
+  - agent runtime
+  - durable execution
+  - checkpointing
+  - fault tolerance
   - multi-agent systems
   - scientific agents
-  - systems biology
-  - skill transfer
-  - verification

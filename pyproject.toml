@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mechanistgym"
 version = "0.1.0.dev0"
-description = "A verifier-gated research platform for skill transfer in scientific agents."
+description = "Durable execution for long-horizon AI agent tasks."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -14,19 +14,22 @@ authors = [
   { name = "Moying Li" },
 ]
 keywords = [
+  "agent runtime",
+  "durable execution",
+  "checkpointing",
+  "fault tolerance",
   "multi-agent systems",
   "scientific agents",
-  "systems biology",
-  "skill transfer",
-  "verification",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = []

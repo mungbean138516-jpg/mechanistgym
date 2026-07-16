@@ -1,4 +1,4 @@
-# ADR-0003: Checkpoint agent-semantic artifacts before adding adaptive organization
+# ADR-0003: Use artifact-level checkpoints for durable agent execution
 
 - **Status:** Accepted
 - **Date:** 2026-07-16
@@ -6,9 +6,9 @@
 
 ## Context
 
-The long-term direction is reliable execution for heterogeneous, long-horizon agent systems. A
-static manager hierarchy does not solve the immediate failure mode: a worker can time out after
-producing useful intermediate work, forcing the task to restart.
+Long-horizon Agent Tasks can lose previously completed work when a worker or client is interrupted.
+A static manager hierarchy does not solve that failure mode: the next worker needs a durable record
+of what was committed and where execution should resume.
 
 The first implementation must demonstrate durability without becoming a general workflow engine or
 claiming to snapshot an LLM process. It must also leave the validated scientific fixture intact while
@@ -16,16 +16,19 @@ the broader direction is tested.
 
 ## Decision
 
-Add a parallel, experimental `mechanistgym.runtime` namespace. Its first vertical slice persists:
+Expose **Task → Artifact → Recovery** as the public runtime model in an experimental
+`mechanistgym.runtime` namespace. After every completed step, atomically persist the Artifact and a
+revisioned Checkpoint through the `RuntimeStore` contract; use SQLite as the R0 reference backend.
+
+The first vertical slice represents:
 
 1. an immutable `Task` with ordered resumable steps;
 2. one application-level immutable `Artifact` with a checksummed content field per completed step;
 3. a `Checkpoint` containing the next step and committed Artifact identifiers.
 
-Use standard-library SQLite to atomically commit an Artifact and its successor Checkpoint. Expose an
-async `AgentAdapter.execute_step` boundary, while keeping v0.1 execution sequential. When an adapter
-raises `RecoverableAgentError`, reroute the same uncommitted step to the next adapter. A reopened
-runner loads the last committed Checkpoint and never requests earlier steps again.
+Expose an async `AgentAdapter.execute_step` boundary, while keeping R0 execution sequential. When an
+adapter raises `RecoverableAgentError`, reroute the same uncommitted step to the next adapter. A
+reopened runner loads the last committed Checkpoint and never requests earlier steps again.
 
 ## Concrete example
 
@@ -68,11 +71,11 @@ Step 0 is not repeated.
 - recovery is at-least-once at the step boundary, not exactly-once for external side effects;
 - uncommitted hidden context inside a failed model call is not recoverable.
 
-## Explicit non-claims
+## Scope boundary
 
-R0 is not an operating system, a Ray/Temporal/Airflow replacement, a process snapshotter, a learned
-router, or an autonomous AI organization. It demonstrates checkpointed, artifact-level handoff in a
-controlled local runtime.
+R0 is a local, sequential prototype of application-level durability. It does not claim process-level
+checkpointing, general workflow orchestration, distributed fault tolerance, exactly-once external
+effects, learned routing, or adaptive organization.
 
 ## Review trigger
 
