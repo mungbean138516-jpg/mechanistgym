@@ -2,9 +2,9 @@
 
 **Review type:** Verification and Validation (V&V) Review
 **Review date:** 2026-07-16
-**Decision:** Accepted for deterministic local R2 engineering verification. Remote CI remains
-pending until this branch is published. Live Qwen validation is a separate opt-in empirical gate
-because no user-owned API credential is available in CI.
+**Decision:** Accepted for deterministic local and remote R2 engineering verification. Live Qwen
+validation is a separate opt-in empirical gate because no user-owned API credential is available in
+CI.
 
 ## Scope reviewed
 
@@ -37,7 +37,7 @@ because no user-owned API credential is available in CI.
 | Resume preserves step 0; restart recomputes it | measured call counts and prefix checksums | Pass |
 | Estimated cost requires known usage and structured prices | pricing and missing-usage fixtures | Pass |
 | Existing R0/R1 behavior remains compatible | 70-test complete local suite | Pass |
-| Python 3.11–3.13 remote matrix | GitHub Actions | Pending |
+| Python 3.11–3.13 remote matrix | [GitHub Actions run 29496209067](https://github.com/mungbean138516-jpg/mechanistgym/actions/runs/29496209067) | Pass |
 | Live Qwen request contract | explicit user-owned smoke run | Pending, not a CI blocker |
 
 ## Validation boundary

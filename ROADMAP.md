@@ -89,8 +89,9 @@ observed traces prove resume recomputes zero committed steps while restart recom
 real-provider run remains an explicit empirical gate and is never required in CI.
 
 **Implementation status:** adapter, telemetry, benchmark harness, and deterministic acceptance tests
-are implemented on the R2 development branch. The opt-in Qwen smoke run is pending user-owned API
-credentials and will be reported separately from deterministic verification.
+are implemented on the R2 development branch. Local verification and the remote Python 3.11–3.13
+matrix pass. The opt-in Qwen smoke run is pending user-owned API credentials and will be reported
+separately from deterministic verification.
 
 The **R-series is the project**: reusable infrastructure for reliable long-horizon Agent execution.
 
