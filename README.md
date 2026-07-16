@@ -8,6 +8,10 @@ MechanistGym is a research platform and benchmark framework for studying how sci
 
 > **Status:** pre-alpha. The repository currently provides the validated M0 platform contracts and an analytic end-to-end fixture. It does not yet report skill-transfer or multi-agent results.
 
+> **Experimental runtime track:** the repository now also contains a bounded vertical slice for
+> checkpointed failover between agent adapters. This track is being validated before any project
+> rename or broader platform claim.
+
 ## Research objective
 
 The central question is:
@@ -50,16 +54,59 @@ flowchart LR
     E --> F["Structured episode trace"]
 ~~~
 
+## Checkpointed failover vertical slice
+
+Long-horizon agent work is brittle when an interrupted worker forces valid intermediate work to be
+recomputed. The experimental `mechanistgym.runtime` namespace tests one narrower claim:
+
+> A fallback agent can continue from the last committed, artifact-level checkpoint without
+> repeating completed task steps.
+
+The current slice persists only three domain objects:
+
+- **Task:** an immutable goal and ordered set of resumable steps;
+- **Artifact:** one application-level immutable result with SHA-256 content checking;
+- **Checkpoint:** the next step and exact Artifact references needed for handoff.
+
+SQLite atomically commits each Artifact with the Checkpoint that references it. The runner exposes
+an asynchronous `AgentAdapter` boundary but deliberately executes one step at a time. A deterministic
+failure fixture makes recovery reproducible instead of waiting for a real API outage.
+
+~~~mermaid
+sequenceDiagram
+    participant R as DurableRunner
+    participant A as Primary Agent
+    participant S as SQLite Store
+    participant B as Fallback Agent
+    R->>A: Execute step 0
+    A-->>R: Artifact 0
+    R->>S: Commit Artifact 0 + Checkpoint 1
+    R->>A: Execute step 1
+    A--xR: Injected recoverable failure
+    R->>B: Execute step 1 from Checkpoint 1
+    B-->>R: Artifact 1
+    R->>S: Commit Artifact 1 + Checkpoint 2
+    R->>B: Execute step 2
+~~~
+
+This is **agent-semantic durability**, not a process snapshot. It does not preserve hidden model
+reasoning, promise exactly-once side effects, replace Ray/Temporal/Airflow, or yet provide learned
+routing and autonomous organization.
+
 ## Quick start
 
 MechanistGym M0 has no runtime dependencies beyond Python 3.11 or newer.
 
 ~~~bash
 make demo
+make runtime-demo
 make test
 ~~~
 
 The demo should recover k=0.25 and produce a verified prediction at t=6. The test suite includes positive and negative verifier fixtures.
+
+The runtime demo injects a failure at step 1. Its expected call trace is `primary=[0, 1]` and
+`fallback=[1, 2]`: step 0 remains committed and is not repeated.
 
 ## Design principles
 
@@ -92,6 +139,7 @@ See [research charter](docs/research_charter.md), [roadmap](ROADMAP.md), and [re
 ## Repository structure
 
 - **src/mechanistgym/** — platform contracts and reference implementations
+- **src/mechanistgym/runtime/** — experimental Task, Artifact, Checkpoint, SQLite, and failover contracts
 - **tests/** — unit, negative-fixture, and end-to-end acceptance tests
 - **docs/decisions/** — architecture decision records
 - **docs/reviews/** — milestone verification and validation records

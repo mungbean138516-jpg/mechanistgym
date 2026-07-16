@@ -28,6 +28,9 @@ htmlcov/
 *.pem
 *.key
 
+# Private learning and reporting notes
+docs/lessons/
+
 # Experiment artifacts and large local data
 artifacts/
 data/raw/

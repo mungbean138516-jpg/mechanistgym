@@ -16,6 +16,27 @@ MechanistGym is organized as a sequence of gated research milestones. Each gate 
 
 **Exit gate:** local tests pass; remote CI and independent reproduction complete.
 
+## R0 — Checkpointed agent failover vertical slice
+
+**Objective:** preserve committed agent artifacts when a recoverable worker failure occurs.
+
+**Scope:**
+
+- immutable Task, Artifact, and Checkpoint contracts;
+- SQLite persistence with atomic Artifact–Checkpoint commits;
+- asynchronous AgentAdapter boundary with sequential step execution;
+- deterministic failure injection and fallback rerouting;
+- close/reopen recovery without repeating completed steps.
+
+**Non-goals:** general process checkpointing, distributed execution, exactly-once external side
+effects, budget management, model-context recovery, learned routing, or autonomous organization.
+
+**Exit gate:** recovery, reopen, idempotent completion, stale-checkpoint, definition-mismatch, and
+corruption tests pass; the failure demo shows `primary=[0, 1]`, `fallback=[1, 2]`.
+
+R0 is a cross-cutting infrastructure experiment. It does not replace the scientific roadmap or
+authorize a repository rename before the planned direction and user validation.
+
 ## M1 — ODE task environments and noisy observations
 
 **Objective:** move from exact interface validation to nontrivial estimation.
