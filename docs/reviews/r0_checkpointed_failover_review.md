@@ -1,9 +1,9 @@
-# R0 Checkpointed Failover Acceptance Review
+# R0 Durable Agent Execution Acceptance Review
 
 **Review type:** Verification and Validation (V&V) Review
 **Review date:** 2026-07-16
-**Decision:** Accepted for the local R0 vertical slice; remote CI and external reproduction remain
-pending.
+**Decision:** Accepted locally for the R0 vertical slice. The updated Python 3.11–3.13 remote CI
+matrix and independent external reproduction remain pending.
 
 ## Scope reviewed
 
@@ -13,7 +13,7 @@ pending.
 - SQLite atomic Artifact–Checkpoint commit;
 - ordered AgentAdapter failover chain;
 - deterministic recoverable and non-recoverable failures;
-- close/reopen and abrupt-interruption recovery;
+- close/reopen, cancellation, and abrupt OS-process termination recovery;
 - structured append-only execution trace;
 - installed-package runtime demonstration.
 
@@ -23,7 +23,8 @@ pending.
 |---|---|---|
 | Completed work is not repeated after failover | `primary=[0, 1]`, `fallback=[1, 2]` | Pass |
 | State survives runner/store recreation | SQLite close/reopen acceptance test | Pass |
-| Abrupt interruption can reopen from committed state | task remains `RUNNING`, revision 1 reloads | Pass |
+| Cancellation can reopen from committed state | task remains `RUNNING`, revision 1 reloads | Pass |
+| Abrupt process exit can recover in a new process | child exits via `os._exit(17)`; second child resumes steps 1–2 | Pass |
 | Artifact and Checkpoint commit atomically | injected SQLite trigger rolls both changes back | Pass |
 | Stale checkpoints cannot overwrite new state | revision conflict test | Pass |
 | Terminal state cannot regress through a stale writer | compare-and-swap status test | Pass |
@@ -34,7 +35,7 @@ pending.
 | Existing scientific fixture remains compatible | original decay tests and demo | Pass |
 | Source passes local quality gates | compile, Ruff lint, Ruff format | Pass |
 | Built package works outside the source tree | wheel install and runtime smoke test | Pass |
-| Python 3.11–3.13 remote matrix | GitHub Actions | Pending push/PR |
+| Python 3.11–3.13 remote matrix for this revision | GitHub Actions, PR #4 | Pending push/PR |
 | Independent reproduction | External reviewer | Pending |
 
 ## Commands reviewed
@@ -45,7 +46,7 @@ make check
 python -m pip wheel . --no-deps --no-build-isolation
 ```
 
-Local result: 24 tests passed, including 17 runtime-specific tests and all 7 pre-existing scientific
+Local result: 26 tests passed, including 19 runtime-specific tests and all 7 pre-existing scientific
 tests. Ruff lint and format checks passed. The built wheel imported and completed the runtime demo
 from outside the repository source tree.
 
@@ -84,6 +85,11 @@ Independent code/API/test reviews identified and the implementation resolved:
 - reroute events missing structured step and fallback-agent fields;
 - `RECOVERING` remaining as stale history rather than current lifecycle state;
 - missing abrupt-interruption and transaction-rollback acceptance tests.
+
+The final hardening pass additionally replaced the purely simulated interruption claim with a child
+process that commits step 0 and calls `os._exit(17)` during step 1. A separate Python process opens
+the same database and completes only steps 1 and 2. Async cancellation is also verified to propagate
+without converting the Task to a false terminal failure.
 
 ## Validation boundary
 

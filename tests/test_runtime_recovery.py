@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import asyncio
+import os
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -54,6 +58,36 @@ class CrashAfterCheckpointAdapter:
         self.calls.append(step_index)
         if step_index == 1:
             raise SimulatedProcessCrash
+        return Artifact.create(
+            task_id=task.task_id,
+            step_index=step_index,
+            producer=self.name,
+            content=f"completed:{task.steps[step_index]}",
+        )
+
+
+class BlockingAfterCheckpointAdapter:
+    """Commit step zero and wait indefinitely during step one."""
+
+    name = "blocking-agent"
+
+    def __init__(self, step_started: asyncio.Event) -> None:
+        self.step_started = step_started
+        self.release = asyncio.Event()
+        self.calls: list[int] = []
+
+    async def execute_step(
+        self,
+        task: Task,
+        *,
+        step_index: int,
+        artifacts: tuple[Artifact, ...],
+    ) -> Artifact:
+        del artifacts
+        self.calls.append(step_index)
+        if step_index == 1:
+            self.step_started.set()
+            await self.release.wait()
         return Artifact.create(
             task_id=task.task_id,
             step_index=step_index,
@@ -157,6 +191,37 @@ class RuntimeRecoveryTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(fallback.calls, [1, 2])
             self.assertTrue(result.recovered)
             self.assertEqual(result.status, TaskStatus.SUCCEEDED)
+
+    async def test_cancellation_preserves_committed_checkpoint_for_reopen(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "runtime.sqlite3"
+            task = _task("cancel-recovery")
+            step_started = asyncio.Event()
+            blocking_agent = BlockingAfterCheckpointAdapter(step_started)
+
+            with SQLiteRuntimeStore(database) as first_store:
+                execution = asyncio.create_task(
+                    DurableRunner(first_store).run(task, (blocking_agent,))
+                )
+                await asyncio.wait_for(step_started.wait(), timeout=5.0)
+                execution.cancel()
+                with self.assertRaises(asyncio.CancelledError):
+                    await execution
+
+                self.assertEqual(blocking_agent.calls, [0, 1])
+                self.assertEqual(first_store.get_status(task.task_id), TaskStatus.RUNNING)
+                self.assertEqual(first_store.load_checkpoint(task.task_id).next_step, 1)
+
+            fallback = ScriptedAgentAdapter(name="cancellation-fallback")
+            with SQLiteRuntimeStore(database) as reopened_store:
+                result = await DurableRunner(reopened_store).run(task, (fallback,))
+
+            self.assertEqual(result.status, TaskStatus.SUCCEEDED)
+            self.assertTrue(result.recovered)
+            self.assertEqual(fallback.calls, [1, 2])
+            self.assertEqual([artifact.step_index for artifact in result.artifacts], [0, 1, 2])
+            self.assertIn(EventType.TASK_RESUMED, [event.event_type for event in result.events])
+            self.assertNotIn(EventType.TASK_FAILED, [event.event_type for event in result.events])
 
     async def test_reopens_sqlite_and_resumes_with_a_new_runner(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -274,6 +339,96 @@ class RuntimeRecoveryTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(trace["failure_count"], 1)
         self.assertEqual(trace["primary_calls"], [0, 1])
         self.assertEqual(trace["fallback_calls"], [1, 2])
+
+
+class RuntimeProcessRecoveryTests(unittest.TestCase):
+    def test_os_process_exit_then_new_process_resumes_checkpoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            database = Path(directory) / "runtime.sqlite3"
+            repository = Path(__file__).resolve().parents[1]
+            helper = repository / "tests" / "helpers" / "runtime_process_worker.py"
+            environment = os.environ.copy()
+            source_root = repository / "src"
+            existing_pythonpath = environment.get("PYTHONPATH")
+            environment["PYTHONPATH"] = (
+                str(source_root)
+                if not existing_pythonpath
+                else os.pathsep.join((str(source_root), existing_pythonpath))
+            )
+
+            crashed = subprocess.run(
+                [sys.executable, str(helper), "crash", str(database)],
+                cwd=repository,
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
+            self.assertEqual(
+                crashed.returncode,
+                17,
+                msg=f"stdout:\n{crashed.stdout}\nstderr:\n{crashed.stderr}",
+            )
+
+            with SQLiteRuntimeStore(database) as interrupted_store:
+                self.assertEqual(
+                    interrupted_store.get_status("process-recovery"),
+                    TaskStatus.RUNNING,
+                )
+                self.assertEqual(
+                    interrupted_store.load_checkpoint("process-recovery").next_step,
+                    1,
+                )
+                self.assertEqual(
+                    [
+                        artifact.step_index
+                        for artifact in interrupted_store.list_artifacts("process-recovery")
+                    ],
+                    [0],
+                )
+
+            resumed = subprocess.run(
+                [sys.executable, str(helper), "resume", str(database)],
+                cwd=repository,
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
+            )
+            self.assertEqual(
+                resumed.returncode,
+                0,
+                msg=f"stdout:\n{resumed.stdout}\nstderr:\n{resumed.stderr}",
+            )
+
+            with SQLiteRuntimeStore(database) as recovered_store:
+                self.assertEqual(
+                    recovered_store.get_status("process-recovery"),
+                    TaskStatus.SUCCEEDED,
+                )
+                self.assertEqual(
+                    recovered_store.load_checkpoint("process-recovery").next_step,
+                    3,
+                )
+                artifacts = recovered_store.list_artifacts("process-recovery")
+                self.assertEqual([artifact.step_index for artifact in artifacts], [0, 1, 2])
+                self.assertEqual(
+                    [artifact.producer for artifact in artifacts],
+                    ["process-primary", "process-fallback", "process-fallback"],
+                )
+                events = recovered_store.list_events("process-recovery")
+                self.assertIn(EventType.TASK_RESUMED, [event.event_type for event in events])
+                self.assertEqual(
+                    [
+                        event.step_index
+                        for event in events
+                        if event.event_type is EventType.ATTEMPT_STARTED
+                        and event.agent_name == "process-fallback"
+                    ],
+                    [1, 2],
+                )
 
 
 class RuntimeStoreIntegrityTests(unittest.TestCase):
