@@ -1,5 +1,10 @@
 # M0 Acceptance and Review Record
 
+> **Historical review.** This record preserves the factual acceptance evidence for the original
+> scientific scaffold. Its proposed scientific follow-on was superseded by the R-series durable
+> Agent-execution direction. Scientific discovery, skill transfer, and multi-agent organization are
+> Future Research, not current project claims.
+
 **Review type:** Verification and Validation (V&V) Review
 
 **Review date:** 2026-07-15
@@ -67,4 +72,11 @@ Local result: 7 tests passed; Ruff lint and format checks passed. Remote result:
 
 ## Review conclusion
 
-M0 meets its purpose as a minimal, verifiable research scaffold. It must not be presented as a multi-agent result. The next milestone should add a second ODE family, observation noise, and a regression-based baseline before any LLM or multi-agent layer.
+M0 met its purpose as a minimal, verifiable research scaffold. It must not be presented as a
+multi-agent result.
+
+At the time of this review, the proposed next scientific milestone was to add a second ODE family,
+observation noise, and a regression-based baseline before any LLM or multi-agent layer. That
+recommendation is retained as historical context, not as the active roadmap. The active project now
+focuses on durable execution and recovery for long-horizon Agent workflows; any return to the
+scientific proposal requires separate validation and planning.

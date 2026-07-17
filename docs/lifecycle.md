@@ -1,6 +1,12 @@
-# Research Engineering Lifecycle
+# Task-Pack and Research Validation Lifecycle
 
-MechanistGym combines research design, research software engineering, benchmark development, and artifact review.
+> **Scope:** This is a reusable validation process for future benchmark, Task-pack, and research
+> work. It is not the active product roadmap. MechanistGym's active project is durable execution for
+> long-horizon Agent workflows; the M0 scientific examples below are historical illustrations.
+
+Future research work may combine research design, research software engineering, benchmark
+development, and Artifact review. Scientific discovery, skill transfer, and adaptive organization
+must pass this lifecycle before they become project claims.
 
 ## 1. Problem formulation
 
@@ -18,7 +24,8 @@ Freeze task splits, baselines, primary outcomes, budgets, stopping rules, and ac
 
 Implement the smallest end-to-end path with explicit interfaces and structured traces.
 
-**M0 example:** observations → parameter estimate → prediction → independent verification.
+**Historical M0 example:** observations → parameter estimate → prediction → independent
+verification.
 
 **Gate:** the path compiles, runs, and exposes failure states.
 
@@ -26,15 +33,17 @@ Implement the smallest end-to-end path with explicit interfaces and structured t
 
 Check that the implementation satisfies its specification.
 
-**M0 example:** the analytic simulator matches the closed-form solution and an incorrect artifact is rejected.
+**Historical M0 example:** the analytic simulator matches the closed-form solution and an incorrect
+Artifact is rejected.
 
 **Gate:** positive and negative fixtures behave as specified.
 
-## 5. Scientific validation
+## 5. Task-pack or scientific validation
 
 Check that the benchmark measures the intended capability rather than a shortcut or implementation artifact.
 
-**Planned example:** introduce observation noise and topology shifts to test whether apparent success depends on noiseless algebra.
+**Future example:** introduce observation noise and topology shifts to test whether apparent success
+depends on noiseless algebra. This is not an active runtime milestone.
 
 **Gate:** graders have gold fixtures, documented limitations, and leakage controls.
 

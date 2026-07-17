@@ -1,12 +1,19 @@
 # ADR-0001: Establish a single-agent baseline before multi-agent orchestration
 
-- **Status:** Accepted
+- **Status:** Historical; superseded for active project direction by ADR-0003 through ADR-0005
 - **Date:** 2026-07-14
 - **Decision type:** Architecture Decision Record (ADR)
 
 ## Context
 
-MechanistGym is ultimately a multi-agent research program. However, adding several roles before validating the environment and verifier would make failures difficult to attribute. A successful output could come from hidden information leakage, and a failure could come from the biological model, agent, communication protocol, or grader.
+This decision records the original scientific research scaffold. At the time, adding several roles
+before validating the Environment and Verifier would have made failures difficult to attribute. A
+successful output could have come from hidden information leakage, and a failure could have come
+from the biological Model, Agent, communication protocol, or grader.
+
+The active project is now durable execution for long-horizon Agent workflows. Multi-agent
+scientific discovery, skill transfer, and adaptive organization remain possible future research,
+not the destination assumed by the current roadmap.
 
 ## Decision
 
@@ -17,7 +24,9 @@ M0 implements one deterministic agent with four explicit boundaries:
 3. agent;
 4. verifier.
 
-Multi-agent orchestration begins only after these interfaces and the episode trace pass acceptance tests.
+The original plan deferred multi-agent orchestration until these interfaces and the Episode trace
+passed acceptance tests. M0 satisfied that local scaffold, but it did not activate a multi-agent
+scientific roadmap.
 
 ## Concrete example
 
@@ -39,4 +48,6 @@ AnalyticDecayAgent observes protein concentrations, estimates a hidden degradati
 
 ## Review trigger
 
-Revisit this decision after the ODE environment and scientific validators pass M2.
+There is no active M2 trigger. Reviving multi-agent scientific orchestration, skill transfer, or
+adaptive organization requires a new ADR and separate evidence that the proposed research problem
+is real, measurable, and not already addressed by the durable-runtime roadmap.

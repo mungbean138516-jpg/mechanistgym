@@ -18,8 +18,10 @@ keywords = [
   "durable execution",
   "checkpointing",
   "fault tolerance",
-  "multi-agent systems",
-  "scientific agents",
+  "agent orchestration",
+  "workflow recovery",
+  "reliable AI systems",
+  "provider failover",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -39,7 +41,12 @@ Repository = "https://github.com/mungbean138516-jpg/mechanistgym"
 Issues = "https://github.com/mungbean138516-jpg/mechanistgym/issues"
 
 [project.optional-dependencies]
+provider-openai = [
+  "openai>=2,<3",
+]
 dev = [
+  "httpx>=0.23,<1",
+  "openai>=2,<3",
   "ruff>=0.6",
 ]
 

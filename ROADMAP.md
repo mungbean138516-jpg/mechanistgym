@@ -1,8 +1,9 @@
 # Project Roadmap
 
-MechanistGym is organized as gated runtime and validation milestones. The R-series is the current
-product-engineering track; the M-series is a separate scientific validation track. Each gate requires
-aligned implementation, tests, evidence, and review documentation.
+MechanistGym is organized around gated reliable-execution milestones. The R-series is the active
+product-engineering roadmap. Scientific discovery, skill transfer, and adaptive organization are
+non-committed Future Research and require separate validation before entering this roadmap. Each gate
+requires aligned implementation, tests, evidence, and review documentation.
 
 ## R0 — Durable agent execution vertical slice
 
@@ -27,8 +28,8 @@ formation.
 stale-checkpoint, definition-mismatch, and corruption tests pass; the failure demo shows
 `primary=[0, 1]`, `fallback=[1, 2]`.
 
-R0 is a cross-cutting infrastructure experiment. It does not replace the scientific roadmap or
-authorize a repository rename before the planned direction and user validation.
+R0 established durable Agent execution as the active project direction. The older decay fixture
+remains a regression fixture and possible future scientific Task pack; it is not the product roadmap.
 
 ## R1 — Bounded asynchronous Task execution
 
@@ -58,116 +59,61 @@ infrastructure error, and multiple active exceptions remain visible.
 Python 3.11–3.13 matrix cover the exit gate; the milestone remains pre-release while its stacked pull
 request is in draft review.
 
-The **R-series** validates reusable runtime infrastructure. The **M-series** remains the scientific
-validation and research track.
+## R2 — Visible provider execution and matched recovery baselines
 
-## Scientific validation track
+**Objective:** connect the runtime to one real hosted-model interface and measure what checkpoint
+recovery preserves relative to clean sequential execution and restart from scratch.
 
-### M0 — Platform contracts and analytic fixture
+**Scope:**
 
-**Objective:** establish explicit Model, Environment, Agent, Verifier, and Episode interfaces before
-introducing LLM or multi-agent complexity.
+- one optional, non-streaming OpenAI-compatible Chat Completions adapter, initially configured for
+  Qwen through Alibaba Cloud Model Studio;
+- API keys read only from a named environment variable and no raw prompt, response, header, or
+  secret in telemetry;
+- one visible SDK request per step with SDK retries disabled;
+- sanitized request outcome, token usage, model, latency, finish reason, provider error code, and
+  prompt hash;
+- four matched conditions using the same Task, provider, model, prompt template, temperature, seed,
+  thinking mode, output limit, endpoint-bound region, and shared live SDK client;
+- explicit post-response/pre-commit failure injection and user-supplied dated pricing snapshots.
 
-**Artifacts:**
+**Non-goals:** streaming, tool calls, automatic retry or backoff, provider rate-limit scheduling,
+dynamic pricing lookup, persistent or distributed telemetry, cross-provider comparison, exact
+billing reconciliation, semantic quality claims, or production-outage simulation.
 
-- first-order decay analytic fixture;
-- closed-form parameter-estimation baseline;
-- independent positive and negative verifier fixtures;
-- typed episode trace;
-- CI, issue and pull-request templates, ADRs, and an M0 V&V record.
+**Exit gate:** deterministic fake-client and real-SDK mock-transport tests prove success, unknown
+usage, timeout/cancellation, Qwen rate-limit versus billing classification, protocol rejection,
+HTTPS credential transport, and secret-safe records. For a three-step Task failing at step 1, the
+matched protocol accounts for 3 sequential, 3 clean-checkpoint, 4 resume, and 5 restart calls;
+observed traces prove resume recomputes zero committed steps while restart recomputes one. A
+real-provider run remains an explicit empirical gate and is never required in CI.
 
-**Exit gate:** local tests pass; remote CI and independent reproduction complete.
+**Implementation status:** adapter, telemetry, benchmark harness, and deterministic acceptance tests
+are implemented on the R2 development branch. Local verification and the remote Python 3.11–3.13
+matrix pass. The opt-in Qwen smoke run is pending user-owned API credentials and will be reported
+separately from deterministic verification.
 
-### M1 — ODE task environments and noisy observations
+The **R-series is the project**: reusable infrastructure for reliable long-horizon Agent execution.
 
-**Objective:** move from exact interface validation to nontrivial estimation.
+## Next runtime and product validation
 
-**Systems:**
+- persist sanitized provider telemetry incrementally so interrupted experiment blocks remain
+  auditable;
+- define explicit provider retry, backoff, rate-limit, and budget policies without hiding attempts;
+- improve recovery inspection and operator ergonomics;
+- repeat matched live-provider blocks with rotated condition order and task-specific verifiers;
+- reconcile estimates against user-owned invoices before making economic claims.
 
-- first-order decay with observation noise;
-- logistic growth;
-- two-species feedback;
-- a reduced tumor–immune system.
+## Future research directions
 
-**Methods:**
+The following ideas are deliberately subordinate to the working runtime and require separate
+problem validation before implementation:
 
-- closed-form baseline where available;
-- regression-based estimation;
-- numerical-solver adapter;
-- explicit solver and observation-failure handling.
+- learned failure prediction and adaptive routing after enough traces exist;
+- procedural skill transfer and reusable Agent memory under held-out evaluation;
+- heterogeneous team formation and dynamic organization;
+- verifier-gated scientific Task packs, beginning with the existing systems-biology fixture;
+- held-out transfer, robustness, and multi-agent ablations only when preregistered controls exist.
 
-**Exit gate:** reference trajectories reproduce within declared tolerances, and noisy-task baselines include uncertainty.
-
-### M2 — SBML integration and scientific verifiers
-
-**Objective:** add standardized mechanistic models and domain-grounded validation.
-
-**Artifacts:**
-
-- SBML environment adapter;
-- schema, topology, trajectory, equilibrium, and robustness validators;
-- curated valid and invalid fixtures;
-- benchmark and data cards.
-
-**Exit gate:** graders distinguish curated valid and invalid artifacts at the preregistered threshold.
-
-### M3 — Procedural memory and skill lifecycle
-
-**Objective:** compare static, self-generated, self-revised, and externally verified procedures.
-
-**Conditions:**
-
-- no memory;
-- human-curated procedure;
-- one-shot generated procedure;
-- iterative self-feedback;
-- verifier-gated revision.
-
-**Exit gate:** pilot study quantifies both improvement and negative transfer on frozen development tasks.
-
-### M4 — Role-specialized multi-agent systems
-
-**Objective:** measure when role specialization and communication justify their overhead.
-
-**Candidate roles:**
-
-- experiment planner;
-- mechanistic modeler;
-- scientific critic;
-- reproducibility verifier.
-
-**Required controls:**
-
-- same underlying model family;
-- matched tool access;
-- matched token, time, retry, and compute budgets;
-- role-removal and communication-topology ablations.
-
-**Exit gate:** results identify where multi-agent coordination helps, hurts, or is cost-inefficient.
-
-### M5 — Held-out transfer and robustness
-
-**Objective:** evaluate selective procedure reuse under systems-biology distribution shifts.
-
-**Shifts:**
-
-- dynamical topology;
-- observation noise and sparsity;
-- initial conditions and parameter scales;
-- solver settings;
-- irrelevant or conflicting procedural context.
-
-**Exit gate:** primary outcomes, confidence intervals, failure taxonomy, and frozen manifests are reproducible.
-
-### M6 — Artifact review and release
-
-**Artifacts:**
-
-- technical report;
-- reproducibility package;
-- tagged release;
-- archived benchmark version;
-- independent reproduction record;
-- poster and short technical demonstration.
-
-**Exit gate:** an external reviewer can reproduce the primary table and figure without private context.
+The detailed earlier hypotheses remain in [the research charter](docs/research_charter.md); they are
+not claims about what the repository can do today.

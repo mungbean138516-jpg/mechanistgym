@@ -12,5 +12,7 @@ keywords:
   - durable execution
   - checkpointing
   - fault tolerance
-  - multi-agent systems
-  - scientific agents
+  - agent orchestration
+  - workflow recovery
+  - reliable AI systems
+  - provider failover

@@ -6,7 +6,8 @@ All notable changes to MechanistGym will be documented here.
 
 ### Added
 
-- M0 research-program framing and end-to-end lifecycle.
+- Historical M0 research-program framing and end-to-end lifecycle, now retained as a future
+  Task-pack research scaffold rather than the active product roadmap.
 - Initial roadmap and issue-to-review protocol.
 - Explicit Model, Environment, Agent, Verifier, Episode, and Trace contracts.
 - First-order decay analytic fixture with independent verification.
@@ -24,3 +25,12 @@ All notable changes to MechanistGym will be documented here.
 - A deterministic async demonstration showing three Tasks, two active workflow slots, and one
   checkpointed fallback that does not interrupt its siblings.
 - Product-first README that separates working runtime capabilities from future research directions.
+- Optional OpenAI-compatible provider adapter with explicit timeout, disabled SDK retries, Qwen
+  Model Studio environment configuration, explicit model pinning, and sanitized per-call telemetry.
+- Explicit Qwen thinking-mode requests and endpoint-host-to-region validation for reproducible
+  provider manifests.
+- Matched sequential, clean-checkpoint, checkpoint-resume, and restart-from-scratch evaluation with
+  controlled post-response/pre-commit failure injection and structured user-supplied pricing
+  snapshots.
+- Request-configuration fingerprints, exact call-evidence validation, safe experiment IDs, and
+  real-SDK mock-transport tests for Qwen 429, timeout, and server-error behavior without hidden retry.
