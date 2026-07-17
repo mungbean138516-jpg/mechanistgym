@@ -49,3 +49,25 @@ M0 validates platform contracts with a first-order decay analytic fixture. It do
 - unrestricted autonomous execution;
 - GPU or distributed infrastructure without profiling evidence;
 - claims based only on LLM judging.
+
+## Scientific-track related work
+
+The scientific validation track is informed by:
+
+- [SciGym](https://arxiv.org/abs/2507.02083), an SBML dry lab for evaluating scientific
+  experimentation;
+- [SkillsBench](https://arxiv.org/abs/2602.12670), which measures both benefit and harm from Agent
+  skills;
+- [SkillLearnBench](https://arxiv.org/abs/2604.20087), which studies continual skill generation and
+  feedback;
+- [Process-Reward Tactic Evolution](https://arxiv.org/abs/2606.20839), a related study of
+  verifier-backed learning for Galaxy workflows.
+
+These references motivate the scientific Task-pack track; they do not establish the novelty or
+validation of the durable-execution runtime.
+
+## Research integrity
+
+Reported results must identify task splits, model and tool versions, random seeds, budgets,
+evaluation code, uncertainty, and known limitations. AI-assisted contributions remain subject to
+author review, testing, and scientific accountability.

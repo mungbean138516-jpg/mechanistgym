@@ -34,7 +34,9 @@ jobs:
         run: python -m pip check
 
       - name: Smoke-test the installed package
-        run: python -c "from mechanistgym.demo import run_decay_demo; assert run_decay_demo()['verification_passed']"
+        run: |
+          python -c "from mechanistgym.demo import run_decay_demo; assert run_decay_demo()['verification_passed']"
+          python -c "from mechanistgym.runtime.demo import run_checkpoint_failover_demo; result = run_checkpoint_failover_demo(); assert result['status'] == 'succeeded'; assert result['primary_calls'] == [0, 1]; assert result['fallback_calls'] == [1, 2]"
 
       - name: Run quality gates
         run: make check

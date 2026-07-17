@@ -1,4 +1,4 @@
-"""MechanistGym: small, verifiable environments for scientific agents."""
+"""MechanistGym: durable execution for long-horizon agent tasks."""
 
 from .agents import Agent, AnalyticDecayAgent, Prediction
 from .environment import DecayTask, Environment, LinearDecayEnvironment, Observation
