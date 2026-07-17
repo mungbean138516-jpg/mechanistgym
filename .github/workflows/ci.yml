@@ -37,6 +37,7 @@ jobs:
         run: |
           python -c "from mechanistgym.demo import run_decay_demo; assert run_decay_demo()['verification_passed']"
           python -c "from mechanistgym.runtime.demo import run_checkpoint_failover_demo; result = run_checkpoint_failover_demo(); assert result['status'] == 'succeeded'; assert result['primary_calls'] == [0, 1]; assert result['fallback_calls'] == [1, 2]"
+          python -c "from mechanistgym.runtime.async_demo import run_bounded_async_demo; result = run_bounded_async_demo(); assert result['observed_max_active'] == 2; assert result['result_order'] == ['batch-a', 'batch-b', 'batch-c']; assert all(status == 'succeeded' for status in result['statuses'].values()); assert result['recovered'] == {'batch-a': False, 'batch-b': True, 'batch-c': False}; assert result['fallback_calls'] == [('batch-b', 1)]"
 
       - name: Run quality gates
         run: make check

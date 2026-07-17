@@ -1,20 +1,8 @@
-# Research Roadmap
+# Project Roadmap
 
-MechanistGym is organized as a sequence of gated research milestones. Each gate requires aligned implementation, tests, evaluation evidence, and review documentation.
-
-## M0 — Platform contracts and analytic fixture
-
-**Objective:** establish explicit Model, Environment, Agent, Verifier, and Episode interfaces before introducing LLM or multi-agent complexity.
-
-**Artifacts:**
-
-- first-order decay analytic fixture;
-- closed-form parameter-estimation baseline;
-- independent positive and negative verifier fixtures;
-- typed episode trace;
-- CI, issue and pull-request templates, ADRs, and an M0 V&V record.
-
-**Exit gate:** local tests pass; remote CI and independent reproduction complete.
+MechanistGym is organized as gated runtime and validation milestones. The R-series is the current
+product-engineering track; the M-series is a separate scientific validation track. Each gate requires
+aligned implementation, tests, evidence, and review documentation.
 
 ## R0 — Durable agent execution vertical slice
 
@@ -50,23 +38,47 @@ failure to cancel or corrupt its siblings.
 **Scope:**
 
 - concurrency across distinct Tasks; ordered steps inside each Task remain sequential;
-- a positive `max_concurrency` bound enforced in one Python event loop;
+- a positive, per-`run_many` `max_concurrency` bound enforced in one Python event loop;
 - input-order result stability and per-Task status, Artifact, Checkpoint, and event isolation;
 - terminal Agent failure returned as that Task's failed result while sibling Tasks continue;
-- batch cancellation that preserves only committed work for later Recovery.
+- batch cancellation that preserves only committed work for later Recovery;
+- infrastructure or integrity failure stops queued Tasks, lets already-active siblings settle, and
+  remains visible to the caller without discarding additional batch exceptions.
 
 **Non-goals:** parallel DAG steps, threads or subprocess workers, distributed scheduling, fairness,
 priorities, per-provider rate limiting, duplicate concurrent execution of one Task, or retrying
-infrastructure and integrity failures.
+infrastructure and integrity failures. The bound is not global across separate `run_many` calls.
 
 **Exit gate:** deterministic tests prove real overlap, enforce the concurrency bound, isolate one
 Task's failure, preserve checkpointed failover under concurrency, and recover committed work after
-batch cancellation.
+batch cancellation. Invalid adapter chains fail before persistence, queued Tasks stop after an
+infrastructure error, and multiple active exceptions remain visible.
+
+**Implementation status:** complete on the R1 development branch. Local acceptance and the remote
+Python 3.11–3.13 matrix cover the exit gate; the milestone remains pre-release while its stacked pull
+request is in draft review.
 
 The **R-series** validates reusable runtime infrastructure. The **M-series** remains the scientific
 validation and research track.
 
-## M1 — ODE task environments and noisy observations
+## Scientific validation track
+
+### M0 — Platform contracts and analytic fixture
+
+**Objective:** establish explicit Model, Environment, Agent, Verifier, and Episode interfaces before
+introducing LLM or multi-agent complexity.
+
+**Artifacts:**
+
+- first-order decay analytic fixture;
+- closed-form parameter-estimation baseline;
+- independent positive and negative verifier fixtures;
+- typed episode trace;
+- CI, issue and pull-request templates, ADRs, and an M0 V&V record.
+
+**Exit gate:** local tests pass; remote CI and independent reproduction complete.
+
+### M1 — ODE task environments and noisy observations
 
 **Objective:** move from exact interface validation to nontrivial estimation.
 
@@ -86,7 +98,7 @@ validation and research track.
 
 **Exit gate:** reference trajectories reproduce within declared tolerances, and noisy-task baselines include uncertainty.
 
-## M2 — SBML integration and scientific verifiers
+### M2 — SBML integration and scientific verifiers
 
 **Objective:** add standardized mechanistic models and domain-grounded validation.
 
@@ -99,7 +111,7 @@ validation and research track.
 
 **Exit gate:** graders distinguish curated valid and invalid artifacts at the preregistered threshold.
 
-## M3 — Procedural memory and skill lifecycle
+### M3 — Procedural memory and skill lifecycle
 
 **Objective:** compare static, self-generated, self-revised, and externally verified procedures.
 
@@ -113,7 +125,7 @@ validation and research track.
 
 **Exit gate:** pilot study quantifies both improvement and negative transfer on frozen development tasks.
 
-## M4 — Role-specialized multi-agent systems
+### M4 — Role-specialized multi-agent systems
 
 **Objective:** measure when role specialization and communication justify their overhead.
 
@@ -133,7 +145,7 @@ validation and research track.
 
 **Exit gate:** results identify where multi-agent coordination helps, hurts, or is cost-inefficient.
 
-## M5 — Held-out transfer and robustness
+### M5 — Held-out transfer and robustness
 
 **Objective:** evaluate selective procedure reuse under systems-biology distribution shifts.
 
@@ -147,7 +159,7 @@ validation and research track.
 
 **Exit gate:** primary outcomes, confidence intervals, failure taxonomy, and frozen manifests are reproducible.
 
-## M6 — Artifact review and release
+### M6 — Artifact review and release
 
 **Artifacts:**
 

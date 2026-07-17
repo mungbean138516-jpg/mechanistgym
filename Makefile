@@ -1,10 +1,11 @@
-.PHONY: help install-dev demo runtime-demo compile test lint format-check check
+.PHONY: help install-dev demo runtime-demo runtime-async-demo compile test lint format-check check
 
 help:
 	@echo "MechanistGym development commands"
 	@echo "  make install-dev  Install the package and development tools"
 	@echo "  make demo         Run the M0 analytic fixture"
 	@echo "  make runtime-demo Run checkpointed agent failover"
+	@echo "  make runtime-async-demo Run bounded async Task execution"
 	@echo "  make compile      Compile Python sources to catch syntax errors"
 	@echo "  make test         Run the standard-library test suite"
 	@echo "  make lint         Run Ruff lint checks"
@@ -19,6 +20,9 @@ demo:
 
 runtime-demo:
 	PYTHONPATH=src python -m mechanistgym.runtime.demo
+
+runtime-async-demo:
+	PYTHONPATH=src python -m mechanistgym.runtime.async_demo
 
 compile:
 	python -m compileall -q src tests

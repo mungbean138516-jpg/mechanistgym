@@ -1,7 +1,7 @@
-"""Checkpointed execution primitives for heterogeneous AI agents."""
+"""Durable execution primitives for heterogeneous AI agents."""
 
 from .adapters import AgentAdapter, InvalidAgentOutput, RecoverableAgentError
-from .engine import DurableRunner, ExecutionFailed
+from .engine import DurableRunner, ExecutionFailed, ExecutionSpec
 from .store import (
     CheckpointConflict,
     CorruptStoreError,
@@ -30,6 +30,7 @@ __all__ = [
     "EventType",
     "ExecutionFailed",
     "ExecutionResult",
+    "ExecutionSpec",
     "InvalidAgentOutput",
     "RecoverableAgentError",
     "RuntimeEvent",

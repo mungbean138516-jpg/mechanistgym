@@ -16,4 +16,11 @@ All notable changes to MechanistGym will be documented here.
   close/reopen recovery tests.
 - Recovery acceptance tests for async cancellation and abrupt OS-process termination followed by a
   fresh-process resume.
+- `ExecutionSpec` and bounded `DurableRunner.run_many` execution across independent Tasks, with
+  immutable adapter-chain snapshots, stable input-order results, per-Task Agent-failure isolation,
+  and preservation of committed work during batch cancellation.
+- Infrastructure-error admission control that lets active siblings settle, prevents queued Tasks
+  from starting, and preserves multiple exceptional outcomes in a Python exception group.
+- A deterministic async demonstration showing three Tasks, two active workflow slots, and one
+  checkpointed fallback that does not interrupt its siblings.
 - Product-first README that separates working runtime capabilities from future research directions.

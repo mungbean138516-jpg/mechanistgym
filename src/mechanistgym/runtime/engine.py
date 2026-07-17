@@ -1,12 +1,42 @@
-"""Sequential async runner with checkpointed failover between agent adapters."""
+"""Durable Task execution with ordered steps and bounded async batches."""
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import asyncio
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from typing import cast
 
 from .adapters import AgentAdapter, InvalidAgentOutput, RecoverableAgentError
 from .store import RuntimeStore, RuntimeStoreError
 from .types import Artifact, EventType, ExecutionResult, Task, TaskStatus
+
+
+def _snapshot_failover_chain(
+    failover_chain: Iterable[AgentAdapter],
+) -> tuple[AgentAdapter, ...]:
+    """Validate and freeze one ordered adapter chain before persisted execution."""
+
+    try:
+        adapters = tuple(failover_chain)
+    except TypeError as exc:
+        raise TypeError("failover_chain must be an iterable of AgentAdapter values") from exc
+    if not adapters:
+        raise ValueError("at least one AgentAdapter is required")
+
+    names: list[str] = []
+    for adapter in adapters:
+        if not isinstance(adapter, AgentAdapter) or not callable(
+            getattr(adapter, "execute_step", None)
+        ):
+            raise TypeError("failover_chain entries must satisfy AgentAdapter")
+        name = adapter.name
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("adapter names must be non-empty strings")
+        names.append(name)
+    if len(names) != len(set(names)):
+        raise ValueError("adapter names must be unique within one run")
+    return adapters
 
 
 class ExecutionFailed(RuntimeError):
@@ -17,6 +47,23 @@ class ExecutionFailed(RuntimeError):
             f"task {result.task.task_id!r} failed at step {result.checkpoint.next_step}"
         )
         self.result = result
+
+
+@dataclass(frozen=True)
+class ExecutionSpec:
+    """One durable Task and its ordered Agent failover chain."""
+
+    task: Task
+    failover_chain: tuple[AgentAdapter, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.task, Task):
+            raise TypeError("task must be a Task")
+        object.__setattr__(
+            self,
+            "failover_chain",
+            _snapshot_failover_chain(self.failover_chain),
+        )
 
 
 class DurableRunner:
@@ -34,16 +81,6 @@ class DurableRunner:
             artifacts=self.store.list_artifacts(task.task_id),
             events=events,
         )
-
-    @staticmethod
-    def _validate_failover_chain(failover_chain: Sequence[AgentAdapter]) -> None:
-        if not failover_chain:
-            raise ValueError("at least one AgentAdapter is required")
-        names = [adapter.name for adapter in failover_chain]
-        if any(not name.strip() for name in names):
-            raise ValueError("adapter names must not be empty")
-        if len(names) != len(set(names)):
-            raise ValueError("adapter names must be unique within one run")
 
     @staticmethod
     def _validate_artifact(
@@ -71,11 +108,11 @@ class DurableRunner:
     async def run(
         self,
         task: Task,
-        failover_chain: Sequence[AgentAdapter],
+        failover_chain: Iterable[AgentAdapter],
     ) -> ExecutionResult:
         """Run or resume ``task`` using adapters in ordered failover priority."""
 
-        self._validate_failover_chain(failover_chain)
+        adapters = _snapshot_failover_chain(failover_chain)
         checkpoint = self.store.ensure_task(task)
         status = self.store.get_status(task.task_id)
         if checkpoint.next_step > len(task.steps):
@@ -108,7 +145,7 @@ class DurableRunner:
         active_adapter = 0
         while checkpoint.next_step < len(task.steps):
             step_index = checkpoint.next_step
-            adapter = failover_chain[active_adapter]
+            adapter = adapters[active_adapter]
             artifacts = self.store.list_artifacts(task.task_id)
             self.store.append_event(
                 task.task_id,
@@ -137,7 +174,7 @@ class DurableRunner:
                     agent_name=adapter.name,
                     detail=f"{type(exc).__name__}: {exc}",
                 )
-                if active_adapter + 1 >= len(failover_chain):
+                if active_adapter + 1 >= len(adapters):
                     self.store.transition_status(
                         task.task_id,
                         TaskStatus.FAILED,
@@ -146,7 +183,7 @@ class DurableRunner:
                     )
                     raise ExecutionFailed(self._result(task)) from exc
 
-                fallback = failover_chain[active_adapter + 1]
+                fallback = adapters[active_adapter + 1]
                 current_status = self.store.get_status(task.task_id)
                 if current_status is TaskStatus.RUNNING:
                     self.store.transition_status(
@@ -207,3 +244,65 @@ class DurableRunner:
             detail=f"completed {len(task.steps)} steps",
         )
         return self._result(task)
+
+    async def run_many(
+        self,
+        executions: Sequence[ExecutionSpec],
+        *,
+        max_concurrency: int,
+    ) -> tuple[ExecutionResult, ...]:
+        """Run distinct Tasks concurrently while preserving per-Task recovery semantics.
+
+        Each Task remains sequential. ``max_concurrency`` bounds active Task workflows within this
+        call. Terminal Agent failures become failed results so one Task does not cancel its
+        siblings. After an infrastructure or integrity error becomes known, already-active siblings
+        settle and queued Tasks do not start. If the batch is allowed to settle, one child error is
+        re-raised unchanged and multiple child errors are grouped. Explicit caller cancellation
+        propagates immediately and may supersede pending child errors.
+        """
+
+        if isinstance(max_concurrency, bool) or not isinstance(max_concurrency, int):
+            raise TypeError("max_concurrency must be an integer")
+        if max_concurrency <= 0:
+            raise ValueError("max_concurrency must be positive")
+
+        specs = tuple(executions)
+        if any(not isinstance(spec, ExecutionSpec) for spec in specs):
+            raise TypeError("executions must contain only ExecutionSpec values")
+
+        task_ids = [spec.task.task_id for spec in specs]
+        if len(task_ids) != len(set(task_ids)):
+            raise ValueError("task IDs must be unique within one run_many call")
+        specs = tuple(ExecutionSpec(spec.task, spec.failover_chain) for spec in specs)
+
+        if not specs:
+            return ()
+
+        semaphore = asyncio.Semaphore(max_concurrency)
+        stop_queued = asyncio.Event()
+        not_started = object()
+
+        async def run_one(spec: ExecutionSpec) -> ExecutionResult | object:
+            async with semaphore:
+                if stop_queued.is_set():
+                    return not_started
+                try:
+                    return await self.run(spec.task, spec.failover_chain)
+                except ExecutionFailed as exc:
+                    return exc.result
+                except Exception:
+                    stop_queued.set()
+                    raise
+
+        settled = await asyncio.gather(
+            *(run_one(spec) for spec in specs),
+            return_exceptions=True,
+        )
+        errors = [outcome for outcome in settled if isinstance(outcome, BaseException)]
+        if len(errors) == 1:
+            raise errors[0]
+        if errors:
+            raise BaseExceptionGroup("multiple batch executions failed", errors)
+        if any(outcome is not_started for outcome in settled):
+            raise RuntimeError("batch stopped queued Tasks without a recorded infrastructure error")
+        return tuple(cast(ExecutionResult, outcome) for outcome in settled)
